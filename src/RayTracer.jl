@@ -20,5 +20,4 @@ function output_ppm(data::Array{RGB{Float64}, 2}, fname="out.ppm")
         end
     end
 end
-
 end # module
