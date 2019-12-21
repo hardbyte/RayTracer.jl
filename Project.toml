@@ -1,0 +1,10 @@
+name = "RayTracer"
+uuid = "11d6fbf7-796a-41e7-9859-a0cf256ff276"
+authors = ["Brian Thorne <brian@thorne.link>"]
+version = "0.1.0"
+
+[deps]
+ColorTypes = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
+ImageView = "86fae568-95e7-573e-a6b2-d8a6b900c9ef"
+Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
+TestImages = "5e47fb64-e119-507b-a336-dd2b206d9990"
