@@ -75,6 +75,13 @@ function ray_trace_sphere_objects()
     vertical = [0.0, 2.0, 0.0]
     origin = [0.0, 0.0, 0.0]
 
+    camera = RayTracer.Camera(
+        [-2.0, -1.0, -1.0],
+        [4.0, 0.0, 0.0],
+        [0.0, 2.0, 0.0],
+        [0.0, 0.0, 0.0]
+    )
+
     scene_objects = [
         RayTracer.Sphere([0.0, -100.5, -1.0], 100.0),
         RayTracer.Sphere([-0.5, 0.0, -1.0], 0.5),

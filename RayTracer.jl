@@ -5,10 +5,22 @@ import LinearAlgebra: norm, dot
 to_uint = x -> UInt8(round(x * 255))
 color_to_vector = c::RGB -> [red(c), green(c), blue(c)]
 
+struct Camera
+    lower_left_corner::Vector{Float64}
+    horizontal::Vector{Float64}
+    vertical::Vector{Float64}
+    origin::Vector{Float64}
+end
+
+function get_ray(camera::Camera, u,v)::Ray
+    return Ray(origin, camera.lower_left_corner + u*camera.horizontal + v*camera.vertical)
+end
+
+
 function output_as_ppm(data::AbstractArray{RGB{Float64}, 2}, fname="out.ppm")
     rows, columns = size(data)
-    println("Writing data as ppm")
-    println("Input dimensions: $(size(data))")
+    @info "Writing data as ppm"
+    @info "Input dimensions: $(size(data))"
     open(fname, "w") do f
         write(f, "P3\n")
         write(f, "$columns $rows\n")
