@@ -1,5 +1,6 @@
 using ColorTypes
 using Images
+#using ImageView
 using Setfield
 
 import LinearAlgebra: norm, dot
@@ -15,30 +16,50 @@ zero(::Type{RGB{Float64}}) = RGB{Float64}(0,0,0)
 
 unit_vector = v::Vector -> v/norm(v)
 
-MAX_BOUNCES = 50
+MAX_BOUNCES = 30
 
 function reflect(v::Vector{Float64}, n::Vector{Float64})
     return v - 2*dot(v,n)*n
+end
+
+function scatter(ray::RayTracer.Ray, material::RayTracer.MetalMaterial, rec::RayTracer.HitRecord)
+    # Compute reflection
+    reflected = reflect(unit_vector(ray.direction), rec.normal) .+ material.fuzz * RayTracer.random_point_in_unit_sphere()
+    reflected_ray = RayTracer.Ray(rec.p, reflected)
+    is_scattered = dot(reflected_ray.direction, rec.normal) > 0.0
+    return is_scattered, material.reflection, reflected_ray
+end
+
+function scatter(ray::RayTracer.Ray, material::RayTracer.DiffuseMaterial, rec::RayTracer.HitRecord)
+    # Compute diffuse shader using material
+    target = rec.p + rec.normal + RayTracer.random_point_in_unit_sphere()
+    scattered_ray = RayTracer.Ray(rec.p, target - rec.p)
+    return true, material.color_diffuse, scattered_ray
+end
+
+function scatter(ray::RayTracer.Ray, material::RayTracer.ArbitraryMaterial, rec::RayTracer.HitRecord)
+    # Compute shader for "arbitrary" material
+    target = rec.p + rec.normal + RayTracer.random_point_in_unit_sphere()
+    scattered_ray = RayTracer.Ray(rec.p, target - rec.p)
+    return true, 0.2 * material.color_diffuse, scattered_ray
 end
 
 function color(ray::RayTracer.Ray, objects::Array{<:RayTracer.Object}, depth=0)
 
     rec = RayTracer.hit(objects, ray, 0.0001, maxintfloat(Float64))
 
-    if typeof(rec) == RayTracer.HitRecord && depth < MAX_BOUNCES
+    if typeof(rec) == RayTracer.HitRecord
+        is_scattered, attenuation, scattered_ray = scatter(ray, rec.material, rec)
+        if is_scattered && depth < MAX_BOUNCES
+            return attenuation .* color(scattered_ray, objects, depth+1)
+        else
+            return zeros(Float64, 3)
+        end
+
         # Show normals
         #N = rec.normal
         #return 0.5 * (N .+ 1)
 
-        # Compute diffuse shader using material
-        target = rec.p + rec.normal + RayTracer.random_point_in_unit_sphere()
-        scattered_ray = RayTracer.Ray(rec.p, target - rec.p)
-
-        # Compute reflection
-        reflected = reflect(unit_vector(ray.direction), rec.normal)
-        reflected_ray = RayTracer.Ray(rec.p, reflected)
-        # TODO use get_color() ?
-        return rec.material.color_diffuse .* color(scattered_ray, objects, depth+1)
     else
 
         # Linear Interpolation of blue to white along y axis.
@@ -48,17 +69,12 @@ function color(ray::RayTracer.Ray, objects::Array{<:RayTracer.Object}, depth=0)
     end
 end
 
-# struct Scene
-#     objects::Array{Sphere}
-#     camera::Camera
-#end
-
 
 function ray_trace_sphere_objects()
     # We use image data H,W,C
     # https://juliaimages.org/latest/quickstart/
-    channels, height, width = 3, 300, 600
-    num_samples = 50
+    channels, height, width = 3, 200, 400
+    num_samples = 25
     # Preallocate output image array
     img_CHW::Array{Float64, 3} = zeros(Float64, channels, height, width)
     lower_left_corner = [-2.0, -1.0, -1.0]
@@ -77,16 +93,22 @@ function ray_trace_sphere_objects()
                         color_diffuse = ones(3),
                         color_specular = ones(3),
                         specular_exponent = 50.0,
-                        reflection = 1.0)
+                        reflection = zeros(3))
 
-    red_diffuse_material = @set default_material.color_diffuse = [0.8, 0.5, 0.5]
-    blue_diffuse_material = @set default_material.color_diffuse = [0.5, 0.5, 0.8]
+    red_diffuse_material = RayTracer.DiffuseMaterial([0.7, 0.3, 0.3])
+    blue_diffuse_material = RayTracer.DiffuseMaterial([0.3, 0.3, 0.8])
+    blue_metalic_material = RayTracer.MetalMaterial([0.8, 0.8, 0.95], 0.7)
+    yellow_metalic_material = RayTracer.MetalMaterial([0.8, 0.6, 0.2], 0.05)
 
     scene_objects = [
-        RayTracer.Sphere([0.0, -100.5, -1.0], 100.0, default_material),
-        RayTracer.Sphere([-0.5, 0.0, -1.0], 0.4, red_diffuse_material),
-        RayTracer.Sphere([0.5, 0.0, -1.0], 0.4, blue_diffuse_material),
+        RayTracer.Sphere([0.0, -601, -1.0], 600.0, default_material),
+        RayTracer.Sphere([-1, 0.0, -3.0], 1, blue_diffuse_material),
+        RayTracer.Sphere([1, 0.0, -3.0], 1, yellow_metalic_material),
+        RayTracer.Sphere([2.5, -1.0, -2.5], 0.5, red_diffuse_material),
+        RayTracer.Sphere([2.8, 0.0, -2.0], 0.5, blue_metalic_material),
     ]
+
+    
 
     for row in height:-1:1
         for col in 1:width
@@ -107,7 +129,9 @@ function ray_trace_sphere_objects()
 end
 
 
+@info "Rendering scene"
 @time img_data = ray_trace_sphere_objects()
+@info "Rendering complete"
 
 # For rendering we use Image data as an RGB array.
 # Note our 3 dim matrix use channel-height-width order
@@ -117,4 +141,9 @@ rgb_img = colorview(RGB, img_data)
 @show typeof(rgb_img)
 @show size(rgb_img)
 
-@time RayTracer.output_as_ppm(rgb_img)
+# FLip the Y axis for showing with ImageView
+image = reverse(rgb_img, dims=1)
+
+#imshow(image)
+save("img.png", image)
+#RayTracer.output_as_ppm(rgb_img)

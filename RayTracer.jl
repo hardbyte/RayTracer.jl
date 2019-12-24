@@ -88,16 +88,18 @@ function hit(obj::Sphere, ray::Ray, t_min::Float64, t_max::Float64)
 end
 
 function hit(objects::Array{<:Object}, ray::Ray, t_min::Float64, t_max::Float64)
-    hit_anything = false
     closest_so_far = t_max
     closest_hit = Nothing
     for obj in objects
         optional_hit_record = hit(obj, ray, t_min, t_max)
         if typeof(optional_hit_record) == HitRecord
-            hit_anything = true
-            closest_so_far = optional_hit_record.t
-            closest_hit = optional_hit_record
+            rec::HitRecord = optional_hit_record
+            if rec.t < closest_so_far
+                closest_so_far = rec.t
+                closest_hit = rec
+            end
         end
+        # Lots of non hits...
     end
     return closest_hit
 end

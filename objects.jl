@@ -17,13 +17,12 @@ Sphere is a primitive object.
 * `radius`   - Radius of the Sphere
 * `material` - Material of the Sphere
 """
-struct Sphere{R} <: Object
+struct Sphere <: Object
     center::Vector{Float64}
     radius::Float64
-    material::Material{R}
+    material::Material
 end
 
 show(io::IO, s::Sphere) =
     print(io, "Sphere Object:\n    Center - ", s.center, "\n    Radius - ", s.radius[],
           "\n    ", s.material)
-
