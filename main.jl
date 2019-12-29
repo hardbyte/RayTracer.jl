@@ -18,12 +18,6 @@ function ray_trace_sphere_objects()
     # https://juliaimages.org/latest/quickstart/
     height, width = 200, 400
 
-    default_material = RayTracer.Material(color_ambient = ones(3),
-                        color_diffuse = ones(3),
-                        color_specular = ones(3),
-                        specular_exponent = 50.0,
-                        reflection = zeros(3))
-
     red_diffuse_material = RayTracer.DiffuseMaterial([0.7, 0.3, 0.3])
     blue_diffuse_material = RayTracer.DiffuseMaterial([0.3, 0.3, 0.8])
     dielectric_material = RayTracer.DielectricMaterial(1.5)
@@ -31,7 +25,8 @@ function ray_trace_sphere_objects()
     yellow_metalic_material = RayTracer.MetalMaterial([0.8, 0.6, 0.2], 0.05)
 
     scene_objects = [
-        RayTracer.Sphere([0.0, -601, -1.0], 600.0, default_material),
+        RayTracer.Sphere([0.0, -601, -1.0], 600.0, RayTracer.DiffuseMaterial([0.6,0.8,0.2])),
+
         RayTracer.Sphere([-1.4, -0.5, -3.0], 1, blue_diffuse_material),
 
         # bubble
@@ -55,6 +50,25 @@ function ray_trace_sphere_objects()
     #     # a hollow glass sphere
     #     RayTracer.Sphere([-1,0,-1], -0.45, RayTracer.DielectricMaterial(1.5)),
     # ]
+
+    RayTracer.raytrace(height=height, width=width, camera_angle=90.0, scene=scene_objects)
+end
+
+function ray_trace_tutorial()
+    # We use image data H,W,C
+    # https://juliaimages.org/latest/quickstart/
+    height, width = 100, 200
+
+    scene_objects = [
+        RayTracer.Sphere([0, 0, -1], 0.5, RayTracer.DiffuseMaterial([0.1,0.2,0.5])),
+        RayTracer.Sphere([0, -100.5, -1], 100, RayTracer.DiffuseMaterial([0.8,0.8,0.0])),
+        RayTracer.Sphere([1,0,-1], 0.5, RayTracer.MetalMaterial([0.8,0.6,0.2], 0.3)),
+        RayTracer.Sphere([-1,0,-1], 0.5, RayTracer.DielectricMaterial(1.5)),
+        # note that if you use a negative radius, the geometry is unaffected but
+        # the surface normal points inward, so it can be used as a bubble to make
+        # a hollow glass sphere
+        RayTracer.Sphere([-1,0,-1], -0.45, RayTracer.DielectricMaterial(1.5)),
+    ]
 
     RayTracer.raytrace(height=height, width=width, camera_angle=90.0, scene=scene_objects)
 end

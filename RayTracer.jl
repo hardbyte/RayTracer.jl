@@ -36,12 +36,11 @@ const default_bg = linear_interpolator([0.6, 0.6, 0.6], [0.3, 0.3, 0.9])
 
 
 function color(ray::RayTracer.Ray, objects::Array{<:RayTracer.Object}; depth=0, background=default_bg)::Vector{Float64}
-    # Preallocate a HitRecord
-    rec = zero(HitRecord)
-    is_hit, hit_material = RayTracer.hit(objects, ray, 0.001, maxintfloat(Float64), rec)
+
+    is_hit, hit_record = RayTracer.hit(objects, ray, 0.001, maxintfloat(Float64))
 
     if is_hit
-        is_scattered, attenuation, scattered_ray = scatter(ray, hit_material, rec)
+        is_scattered, attenuation, scattered_ray = scatter(ray, hit_record.material, hit_record)
         if is_scattered && depth < MAX_BOUNCES
             return attenuation .* color(scattered_ray, objects, depth=depth+1, background=background)
         else
@@ -91,7 +90,6 @@ function raytrace(; height::Int64, width::Int64, camera_angle::Float64, scene)
     num_samples = 50
 
     # Preallocate output image array
-    #pixel_data::Array{Float64, 4} = zeros(Float64, 3, num_samples, height, width)
     pixel_data::Array{Float64, 3} = zeros(Float64, 3, height, width)
 
     for row in height:-1:1
@@ -103,16 +101,12 @@ function raytrace(; height::Int64, width::Int64, camera_angle::Float64, scene)
                 v = (rand() + row)/height
 
                 ray = RayTracer.get_ray(camera, u, v)
-                #pixel = color(ray, scene, background=default_bg)
-                #pixel_data[:, sample, row, col] = pixel
-
                 pixel += color(ray, scene, background=default_bg)
             end
             pixel_data[:, row, col] = pixel/num_samples
         end
     end
 
-    #img_CHW::Array{Float64, 3} = dropdims(sum(pixel_data, dims=2)/num_samples, dims=2)
     img_CHW::Array{Float64, 3} = pixel_data
     return reverse(sqrt.(img_CHW), dims=2)
 end
