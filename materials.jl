@@ -1,4 +1,4 @@
-export Material, ArbitraryMaterial, DiffuseMaterial
+export Material, ArbitraryMaterial, DiffuseMaterial, scatter
 
 """
     Material
@@ -8,61 +8,13 @@ abstract type Material end
 
 
 """
-    DiffuseMaterial
+    ArbitraryMaterial
 
 A simplified version of https://github.com/avik-pal/RayTracer.jl/blob/master/src/materials.jl
 
+    Contains all the required fields for each sub material so we have constant
+    memory requirements for a material.
 """
-struct DiffuseMaterial <: Material
-    # Color Information
-    color_diffuse::Vector{Float64}
-
-    # Surface Properties
-    #specular_exponent::Float64
-    #reflection::Float64
-end
-
-DiffuseMaterial(;color_diffuse = ones(3)) = DiffuseMaterial(color_diffuse)
-
-show(io::IO, m::DiffuseMaterial) =
-    print(io, "DiffuseMaterial",
-          "\n    Color - ", m.color_diffuse,
-          #"\n    Specular - ", m.specular_exponent,
-          #"\n    Reflection - ", m.reflection
-          )
-
-
-struct MetalMaterial <: Material
-    # Color Information
-    reflection::Vector{Float64}
-
-    #color_diffuse::Vector{Float64}
-
-    # Surface Properties
-    fuzz::Float64
-    #specular_exponent::
-
-end
-
-show(io::IO, m::MetalMaterial) =
-    print(io, "MetalMaterial",
-          "\n    Reflection - ", m.reflection,
-          "\n    Fuzziness - ", m.fuzz,
-          )
-
-struct DielectricMaterial <: Material
-    # Color Information
-    #reflection::Vector{Float64}
-
-    # Surface Properties
-    refraction_index::Float64
-    #specular_exponent::
-
-end
-
-show(io::IO, m::DielectricMaterial) = print(io, "DielectricMaterial", "\n    Refraction Index - ", m.refraction_index )
-
-
 struct ArbitraryMaterial <: Material
     # Color Information
     color_ambient::Vector{Float64}
@@ -72,6 +24,9 @@ struct ArbitraryMaterial <: Material
     # Surface Properties
     specular_exponent::Float64
     reflection::Vector{Float64}
+
+    # maybe?
+    #material_type::Val
 end
 
 # Default constructor gives an ArbitraryMaterial
@@ -100,3 +55,55 @@ show(io::IO, m::ArbitraryMaterial) =
           "\n    Specular - ", m.specular_exponent,
           "\n    Reflection - ", m.reflection
           )
+
+
+"""
+    DiffuseMaterial
+
+
+"""
+struct DiffuseMaterial <: Material
+    # All we use is color information or albedo
+    color_diffuse::Vector{Float64}
+end
+
+DiffuseMaterial(;color_diffuse = ones(3)) = DiffuseMaterial(color_diffuse)
+
+show(io::IO, m::DiffuseMaterial) = print(io, "DiffuseMaterial", "\n    Color - ", m.color_diffuse )
+
+
+
+"""
+    MetalMaterial
+"""
+struct MetalMaterial <: Material
+    # Color Information
+    reflection::Vector{Float64}
+
+    # Surface Properties
+    fuzz::Float64
+end
+
+show(io::IO, m::MetalMaterial) =
+    print(io, "MetalMaterial",
+          "\n    Reflection - ", m.reflection,
+          "\n    Fuzziness - ", m.fuzz,
+          )
+
+
+
+struct DielectricMaterial <: Material
+    # Color Information
+    #reflection::Vector{Float64}
+
+    # Surface Properties
+    refraction_index::Float64
+    #specular_exponent::
+
+end
+show(io::IO, m::DielectricMaterial) = print(io, "DielectricMaterial", "\n    Refraction Index - ", m.refraction_index )
+
+
+
+struct NormalMaterial <: Material
+end
