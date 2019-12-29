@@ -50,6 +50,18 @@ show(io::IO, m::MetalMaterial) =
           "\n    Fuzziness - ", m.fuzz,
           )
 
+struct DielectricMaterial <: Material
+    # Color Information
+    #reflection::Vector{Float64}
+
+    # Surface Properties
+    refraction_index::Float64
+    #specular_exponent::
+
+end
+
+show(io::IO, m::DielectricMaterial) = print(io, "DielectricMaterial", "\n    Refraction Index - ", m.refraction_index )
+
 
 struct ArbitraryMaterial <: Material
     # Color Information
