@@ -15,7 +15,7 @@ zero(::Type{RGB{Float64}}) = RGB{Float64}(0,0,0)
 
 function ray_trace_sphere_objects()
     # My own test scene
-    height, width = 200, 400
+    height, width = 400, 800
 
     red_diffuse_material = RayTracer.DiffuseMaterial([0.7, 0.3, 0.3])
     blue_diffuse_material = RayTracer.DiffuseMaterial([0.3, 0.3, 0.8])
@@ -38,7 +38,14 @@ function ray_trace_sphere_objects()
         RayTracer.Sphere([2.8, 0.0, -2.0], 0.5, blue_metalic_material),
     ]
 
-    camera = RayTracer.Camera([-0.5, 0.0, 0.0], [1.5, 0.0, -4.0], [0.0,1.0,0.0], 80.0, width/height)
+    camera = RayTracer.Camera(
+        lookfrom=[-0.5, 0.0, 2.0],
+        lookat=[1.2, 0.3, -4.0],
+        vup=[0.0, 1.0, 0.0],
+        vfov=45.0,
+        aspect=width/height,
+        aperture=1.0/4.0 # Use 0.0 for a perfect pinhole
+    )
 
     RayTracer.raytrace(height=height, width=width, camera=camera, scene=scene_objects)
 end

@@ -49,14 +49,6 @@ function color(ray::Ray, objects::Array{<:Object}; depth=0, background=default_b
 end
 
 
-function random_point_in_unit_sphere()
-    point_in_unit_cube = () -> 2 * rand(3) - ones(3)
-    pnt = point_in_unit_cube()
-    while sum(pnt.^2) >= 1.0
-        pnt = point_in_unit_cube()
-    end
-    return pnt
-end
 
 
 
