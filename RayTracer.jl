@@ -1,8 +1,9 @@
 module RayTracer
 
 using ColorTypes
-import LinearAlgebra: norm, dot
+import LinearAlgebra: norm, dot, cross
 
+include("util.jl")
 include("ray.jl")
 include("materials.jl")
 include("objects.jl")
@@ -11,12 +12,8 @@ include("scattering.jl")
 include("camera.jl")
 
 
-to_uint = x -> UInt8(round(x * 255))
-color_to_vector = c::RGB -> [red(c), green(c), blue(c)]
 
-unit_vector = v::Vector -> v/norm(v)
-
-const MAX_BOUNCES = 10
+const MAX_BOUNCES = 50
 
 
 """
@@ -24,7 +21,7 @@ const MAX_BOUNCES = 10
     based on the direction along the axis provided {1:x, 2:y, 3:z} of a Ray.
 """
 function linear_interpolator(first::Vector{Float64}, second::Vector{Float64}; axis=2)
-    function f(ray::RayTracer.Ray)
+    function f(ray::Ray)
         # Scale from [-1,+1] to [0,1]
         t = 0.5 * (unit_vector(ray.direction)[axis] + 1.0)
         return (1.0 - t) * second + t * first
@@ -35,7 +32,7 @@ end
 const default_bg = linear_interpolator([0.6, 0.6, 0.6], [0.3, 0.3, 0.9])
 
 
-function color(ray::RayTracer.Ray, objects::Array{<:RayTracer.Object}; depth=0, background=default_bg)::Vector{Float64}
+function color(ray::Ray, objects::Array{<:Object}; depth=0, background=default_bg)::Vector{Float64}
 
     is_hit, hit_record = RayTracer.hit(objects, ray, 0.001, maxintfloat(Float64))
 
@@ -85,8 +82,7 @@ end
 """
 
 """
-function raytrace(; height::Int64, width::Int64, camera_angle::Float64, scene)
-    camera = Camera(camera_angle, width/height)
+function raytrace(; height::Int64, width::Int64, camera::Camera, scene)
     num_samples = 50
 
     # Preallocate output image array
@@ -103,7 +99,7 @@ function raytrace(; height::Int64, width::Int64, camera_angle::Float64, scene)
                 ray = RayTracer.get_ray(camera, u, v)
                 pixel += color(ray, scene, background=default_bg)
             end
-            pixel_data[:, row, col] = pixel/num_samples
+            @inbounds pixel_data[:, row, col] = pixel/num_samples
         end
     end
 
