@@ -13,7 +13,7 @@ include("camera.jl")
 
 
 
-const MAX_BOUNCES = 50
+const MAX_BOUNCES = 16
 
 
 """
@@ -32,24 +32,30 @@ end
 const default_bg = linear_interpolator([0.6, 0.6, 0.6], [0.3, 0.3, 0.9])
 
 
-function color(ray::Ray, objects::Array{<:Object}; depth=0, background=default_bg)::Vector{Float64}
+function color(ray::Ray, objects::Array{<:Object}; background=default_bg)::Vector{Float64}
+    output_attenuation = ones(Float64, 3)
+    scattered_ray = ray
+    for depth in 0:MAX_BOUNCES
 
-    is_hit, hit_record = RayTracer.hit(objects, ray, 0.001, maxintfloat(Float64))
+        # Get the first object intersection for the ray.
+        is_hit, hit_record = RayTracer.hit(objects, scattered_ray, 0.001, maxintfloat(Float64))
 
-    if is_hit
-        is_scattered, attenuation, scattered_ray = scatter(ray, hit_record.material, hit_record)
-        if is_scattered && depth < MAX_BOUNCES
-            return attenuation .* color(scattered_ray, objects, depth=depth+1, background=background)
+        if is_hit
+            # Color using the hit object's materials
+            is_scattered, attenuation, scattered_ray = scatter(scattered_ray, hit_record.material, hit_record)
+            output_attenuation = output_attenuation .* attenuation
+            if !is_scattered
+                # The hit object absorbed this ray. E.g. the very edge of a sphere
+                return zeros(Float64, 3)
+            end
         else
-            return zeros(Float64, 3)
+            # Missed all objects; sample the background for this Ray
+            return output_attenuation .* background(scattered_ray)
         end
-    else
-        return background(ray)
     end
+    # After MAX_BOUNCES which all hit objects we return zeros
+    return zeros(Float64, 3)
 end
-
-
-
 
 
 function output_as_ppm(data::AbstractArray{RGB{Float64}, 2}, fname="out.ppm")
@@ -74,8 +80,7 @@ end
 """
 
 """
-function raytrace(; height::Int64, width::Int64, camera::Camera, scene)
-    num_samples = 50
+function raytrace(; height::Int64, width::Int64, camera::Camera, scene, num_samples=32)
 
     # Preallocate output image array
     pixel_data::Array{Float64, 3} = zeros(Float64, 3, height, width)

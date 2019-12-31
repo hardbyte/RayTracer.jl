@@ -47,7 +47,7 @@ function ray_trace_sphere_objects()
         aperture=1.0/4.0 # Use 0.0 for a perfect pinhole
     )
 
-    RayTracer.raytrace(height=height, width=width, camera=camera, scene=scene_objects)
+    RayTracer.raytrace(height=height, width=width, camera=camera, scene=scene_objects, num_samples=64)
 end
 
 function ray_trace_tutorial()
@@ -65,7 +65,7 @@ function ray_trace_tutorial()
         RayTracer.Sphere([-1,0,-1], -0.45, RayTracer.DielectricMaterial(1.5)),
     ]
 
-    RayTracer.raytrace(height=height, width=width, camera_angle=90.0, scene=scene_objects)
+    RayTracer.raytrace(height=height, width=width, camera_angle=90.0, scene=scene_objects, num_samples=16)
 end
 
 
@@ -82,6 +82,7 @@ end
 # Use colorview to convert to RGB image
 rgb_img = colorview(RGB, img_data)
 
+save("out.jpg", rgb_img)
 @show typeof(rgb_img)
 @show size(rgb_img)
 

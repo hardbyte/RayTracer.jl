@@ -16,18 +16,25 @@ function hit(obj::Sphere, ray::Ray, t_min::Float64, t_max::Float64)
     a = dot(ray.direction, ray.direction)
     b = dot(oc, ray.direction)
     c = dot(oc, oc) - obj.radius^2
+
     discriminant = b^2 - a * c
+
+    # TODO: consider branch free logic
     if discriminant > 0
-        temp = (-b - sqrt(discriminant))/a
-        if (temp < t_max) && (temp > t_min)
-            p = point_along_ray(ray, temp)
-            return true, HitRecord(temp, p, (p - obj.center) / obj.radius, obj.material)
+        t0 = (-b - sqrt(discriminant))/a
+        t1 = (-b + sqrt(discriminant))/a
+
+        if (t0 < t_max) && (t0 > t_min)
+            t = t0
+        elseif (t1 < t_max) && (t1 > t_min)
+            t = t1
+        else
+            # Intersection occured outside of t_min and t_max
+            return false, nothing
         end
-        temp = (-b + sqrt(discriminant))/a
-        if (temp < t_max) && (temp > t_min)
-            p = point_along_ray(ray, temp)
-            return true, HitRecord(temp, p, (p - obj.center) / obj.radius, obj.material)
-        end
+        p = point_along_ray(ray, t)
+        return true, HitRecord(t, p, (p - obj.center) / obj.radius, obj.material)
+
     end
     return false, nothing
 end
