@@ -1,13 +1,13 @@
 export scatter
 
-function refract(v::Vector{Float64}, n::Vector{Float64}, ni_over_nt::Float64)
+function refract(v::T, n::T, ni_over_nt::Float64) where {T <: AbstractVector{<:Real}}
     uv = unit_vector(v)
     dt = dot(uv, n)
     discriminant = 1.0 - ni_over_nt*ni_over_nt*(1-dt^2)
     if discriminant > 0.0
         refracted = ni_over_nt*(uv - n*dt) - n*sqrt(discriminant)
     else
-        refracted = [0.0, 0.0, 0.0]
+        refracted = zeros(SVector{3,Float64})
     end
     return discriminant > 0.0, refracted
 end
@@ -18,7 +18,7 @@ function schlick(cosine, refraction_index)
     return r0 + (1-r0)*(1-cosine)^5
 end
 
-function reflect(v::Vector{Float64}, n::Vector{Float64})
+function reflect(v::T, n::T) where {T <: AbstractVector{<:Real}}
     return v - 2*dot(v,n)*n
 end
 
@@ -48,7 +48,7 @@ function scatter(ray::Ray, material::DielectricMaterial, rec::HitRecord)
     # Compute reflection then refraction
     reflected = reflect(ray.direction, rec.normal)
     # todo material property
-    attenuation = [1.0, 1.0, 1.0]
+    attenuation = ones(SVector{3,Float64})
 
     if dot(ray.direction, rec.normal) > 0.0
         outward_normal = -rec.normal

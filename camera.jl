@@ -12,22 +12,34 @@ coordinate system, where:
     - w points at the viewer (not the scene)
 """
 struct Camera
-    lower_left_corner::Vector{Float64}
-    horizontal::Vector{Float64}
-    vertical::Vector{Float64}
-    origin::Vector{Float64}
+    lower_left_corner::SVector{3,Float64}
+    horizontal::SVector{3,Float64}
+    vertical::SVector{3,Float64}
+    origin::SVector{3,Float64}
 
     aperture::Float64
 
     # Orthonormal Basis of Camera
-    v::Vector{Float64}
-    u::Vector{Float64}
-    w::Vector{Float64}
+    v::SVector{3,Float64}
+    u::SVector{3,Float64}
+    w::SVector{3,Float64}
 
 end
 
 
 function Camera(;lookfrom::Vector{Float64}, lookat::Vector{Float64}, vup::Vector{Float64},
+                vfov::Float64, aspect::Float64, aperture::Float64)
+    return Camera(
+        lookfrom=SVector{3,Float64}(lookfrom),
+        lookat=SVector{3,Float64}(lookat),
+        vup=SVector{3,Float64}(vup),
+        vfov=vfov,
+        aspect=aspect,
+        aperture=aperture
+    )
+end
+
+function Camera(;lookfrom::SVector{3,Float64}, lookat::SVector{3,Float64}, vup::SVector{3,Float64},
                 vfov::Float64, aspect::Float64, aperture::Float64)
     theta = vfov*π/180.0
     half_height = tan(theta/2)
