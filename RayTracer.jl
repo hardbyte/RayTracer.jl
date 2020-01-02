@@ -40,11 +40,11 @@ function color(ray::Ray, objects::Array{<:Object}; background=default_bg)::Vec
     for depth in 0:MAX_BOUNCES
 
         # Get the first object intersection for the ray.
-        is_hit, hit_record = RayTracer.hit(objects, scattered_ray, 0.001, maxintfloat(Float64))
+        hit_record = RayTracer.hit(objects, scattered_ray, 0.001, maxintfloat(Float64))
 
-        if is_hit
+        if hit_record !== no_hit
             # Color using the hit object's materials
-            is_scattered, attenuation, scattered_ray = scatter(scattered_ray, hit_record.material, hit_record)
+            is_scattered, attenuation = scatter!(scattered_ray, hit_record.material, hit_record)
             output_attenuation = output_attenuation .* attenuation
             if !is_scattered
                 # The hit object absorbed this ray. E.g. the very edge of a sphere

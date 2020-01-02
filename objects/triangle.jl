@@ -50,12 +50,12 @@ function hit(t::Triangle, ray::Ray, t_min::Float64, t_max::Float64)
     denom = dot(t.normal, ray.direction)
     if denom == 0
         # Ray is orthogonal to triangle's plane
-        return false, nothing
+        return no_hit
     end
     ri = dot(t.normal, (t.p1 - ray.origin)) / denom
     if ri <= 0
         # Ray has no intersection with plane
-        return false, nothing
+        return no_hit
     end
     plane_intersection = ri * ray.direction + ray.origin
     w = plane_intersection - t.p1
@@ -63,24 +63,24 @@ function hit(t::Triangle, ray::Ray, t_min::Float64, t_max::Float64)
     wv2 = dot(w, t.v2)
     s_intersection = (t.v1v2 * wv2 - t.v2v2 * wv1) / t.denom
     if s_intersection <= 0
-        return false, nothing
+        return no_hit
     end
     if s_intersection >= 1
-        return false, nothing
+        return no_hit
     end
 
     t_intersection = (t.v1v2 * wv1 - t.v1v1 * wv2) / t.denom
     if t_intersection <= 0
-        return false, nothing
+        return no_hit
     end
     if t_intersection >= 1
-        return false, nothing
+        return no_hit
     end
     if s_intersection + t_intersection >= 1
-        return false, nothing
+        return no_hit
     end
     # intersecting point
     ip = t.p1 + s_intersection * t.v1 + t_intersection * t.v2
 
-    return true, HitRecord(ri, ip, -t.normal, t.material)
+    return HitRecord(ri, ip, -t.normal, t.material)
 end

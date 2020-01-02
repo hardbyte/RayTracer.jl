@@ -6,7 +6,7 @@ A Box in 3D space.
 We build it out of 6 quads.
 """
 struct Box{V, R} <: CompositeObject
-    origin::Vec
+    #origin::Vec
     faces::SVector{6, Quad}
 
     material::Material
@@ -25,14 +25,12 @@ function Box(origin::V, width::V, height::V, depth::V, material::Material) where
     bottom = Quad(origin, width, depth, material)
 
     faces = SVector{6, Quad}(front, back, left, right, top, bottom)
-    return Box{Vec, Float64}(Vec(origin), faces, material)
+    return Box{Vec, Float64}(faces, material)
 end
 
 function Base.iterate(S::Box, state=1)
     if state < 7
         return (S.faces[state], state+1)
-    else
-        return nothing
     end
 end
 Base.eltype(::Type{Box}) = Quad

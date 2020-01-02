@@ -38,7 +38,7 @@ function ray_trace_sphere_objects()
         RayTracer.Sphere([2.8, 0.0, -2.0], 0.5, blue_metalic_material),
 
         RayTracer.Triangle(
-            RayTracer.Vec([-0.4, -0.5, -3.0]),
+            RayTracer.Vec([-0.4, 0.0, -3.0]),
             RayTracer.Vec([-0.4, 1.0, -3.0]),
             RayTracer.Vec([0.3, 0.3, -2.0]),
             blue_diffuse_material
@@ -52,11 +52,11 @@ function ray_trace_sphere_objects()
         ),
 
         RayTracer.Box(
-            [2.0, 0.7, -2.0],
-            [1.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.0, 0.0, -1.0],
-            red_diffuse_material
+            [2.5, 0.7, -2.5],
+            [1.8, 0.0, 0.0],
+            [0.0, 0.3, 0.0],
+            [0.0, 0.0, -0.5],
+            blue_diffuse_material
         )
 
     ]
@@ -67,10 +67,10 @@ function ray_trace_sphere_objects()
         vup=RayTracer.Vec(0.0, 1.0, 0.0),
         vfov=45.0,
         aspect=width/height,
-        aperture=1.0/32.0 # Use 0.0 for a perfect pinhole
+        aperture=1.0/16.0 # Use 0.0 for a perfect pinhole
     )
 
-    RayTracer.raytrace(height=height, width=width, camera=camera, scene=scene_objects, num_samples=128)
+    RayTracer.raytrace(height=height, width=width, camera=camera, scene=scene_objects, num_samples=64)
 end
 
 function ray_trace_tutorial()

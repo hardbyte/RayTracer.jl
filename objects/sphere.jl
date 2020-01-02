@@ -40,11 +40,11 @@ function hit(obj::Sphere, ray::Ray, t_min::Float64, t_max::Float64)
           t = t1
       else
           # Intersection occured outside of t_min and t_max
-          return false, nothing
+          return no_hit
       end
       p = point_along_ray(ray, t)
-      return true, HitRecord(t, p, Vec((p - obj.center) ./ obj.radius), obj.material)
+      return HitRecord(t, p, Vec((p - obj.center) ./ obj.radius), obj.material)
 
   end
-  return false, nothing
+  return no_hit
 end
