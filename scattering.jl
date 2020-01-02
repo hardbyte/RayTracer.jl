@@ -1,13 +1,13 @@
 export scatter
 
-function refract(v::V, n::V, ni_over_nt::Float64) where {V <: AbstractVector{<:Real}}
+function refract(v::AbstractVector{<:Real}, n::AbstractVector{<:Real}, ni_over_nt::Float64)
     uv = unit_vector(v)
     dt = dot(uv, n)
     discriminant = 1.0 - ni_over_nt*ni_over_nt*(1-dt^2)
     if discriminant > 0.0
         refracted = ni_over_nt*(uv - n*dt) - n*sqrt(discriminant)
     else
-        refracted = zeros(V)
+        refracted = zeros(Vec)
     end
     return discriminant > 0.0, refracted
 end
@@ -18,33 +18,35 @@ function schlick(cosine, refraction_index)
     return r0 + (1-r0)*(1-cosine)^5
 end
 
-function reflect(v::T, n::T) where {T <: AbstractVector{<:Real}}
-    return v - 2*dot(v,n)*n
+function reflect(v::AbstractVector{<:Real}, n::AbstractVector{<:Real})
+    return v - 2 * dot(v, n) * n
 end
 
 
-function scatter(ray::Ray, material::NormalMaterial, rec::HitRecord)
+function scatter!(ray::Ray, material::NormalMaterial, rec::HitRecord)
     N = rec.normal
-    return 0.5 * (N .+ 1)
+    return false, 0.5 * (N .+ 1)
 end
 
-function scatter(ray::Ray, material::DiffuseMaterial, rec::HitRecord)
+function scatter!(ray::Ray, material::DiffuseMaterial, rec::HitRecord)
     # Compute diffuse shader using material
     target = rec.p + rec.normal + RayTracer.random_point_in_unit_sphere()
-    scattered_ray = RayTracer.Ray(rec.p, target - rec.p)
-    return true, material.color_diffuse, scattered_ray
+    ray.origin[:] = rec.p
+    ray.direction[:] = target - rec.p
+    return true, material.color_diffuse
 end
 
 
-function scatter(ray::Ray, material::MetalMaterial, rec::HitRecord)
+function scatter!(ray::Ray, material::MetalMaterial, rec::HitRecord)
     # Compute reflection
     reflected = reflect(unit_vector(ray.direction), rec.normal) .+ material.fuzz * RayTracer.random_point_in_unit_sphere()
-    reflected_ray = RayTracer.Ray(rec.p, reflected)
-    is_scattered = dot(reflected_ray.direction, rec.normal) > 0.0
-    return is_scattered, material.reflection, reflected_ray
+    ray.origin[:] = rec.p
+    ray.direction[:] = reflected
+    is_scattered = dot(reflected, rec.normal) > 0.0
+    return is_scattered, material.reflection
 end
 
-function scatter(ray::Ray, material::DielectricMaterial, rec::HitRecord)
+function scatter!(ray::Ray, material::DielectricMaterial, rec::HitRecord)
     # Compute reflection then refraction
     reflected = reflect(ray.direction, rec.normal)
     # todo material property
@@ -67,18 +69,22 @@ function scatter(ray::Ray, material::DielectricMaterial, rec::HitRecord)
         reflect_probability = 1.0
     end
 
+    ray.origin[:] = rec.p
+
     if rand() > reflect_probability
-        scattered = RayTracer.Ray(rec.p, refracted)
+        scattered_direction = refracted
     else
-        scattered = RayTracer.Ray(rec.p, reflected)
+        scattered_direction = reflected
     end
-    return true, attenuation, scattered
+    ray.direction[:] = scattered_direction
+    return true, attenuation
 end
 
 
-function scatter(ray::Ray, material::ArbitraryMaterial, rec::HitRecord)
+function scatter!(ray::Ray, material::ArbitraryMaterial, rec::HitRecord)
     # Compute shader for "arbitrary" material
     target = rec.p + rec.normal + RayTracer.random_point_in_unit_sphere()
-    scattered_ray = RayTracer.Ray(rec.p, target - rec.p)
-    return true, 0.2 * material.color_diffuse, scattered_ray
+    ray.origin[:] = rec.p
+    ray.direction[:] = target - rec.p
+    return true, 0.2 * material.color_diffuse
 end

@@ -1,8 +1,8 @@
 
 # Ray
 struct Ray
-    origin::Vec
-    direction::Vec
+    origin::MVector{3, Float64}
+    direction::MVector{3, Float64}
 end
 
 function point_along_ray(ray::Ray, t::Float64)
