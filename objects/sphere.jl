@@ -13,7 +13,7 @@ struct Sphere <: Object
     material::Material
 end
 
-function Sphere(center::T,radius::Real, material::Material) where {T<:AbstractVector{<:Real}}
+function Sphere(center::T, radius::Real, material::Material) where {T<:AbstractVector{<:Real}}
     return Sphere(Vec(center), Float64(radius), material)
 end
 
@@ -43,7 +43,7 @@ function hit(obj::Sphere, ray::Ray, t_min::Float64, t_max::Float64)
           return false, nothing
       end
       p = point_along_ray(ray, t)
-      return true, HitRecord(t, p, (p - obj.center) / obj.radius, obj.material)
+      return true, HitRecord(t, p, Vec((p - obj.center) ./ obj.radius), obj.material)
 
   end
   return false, nothing

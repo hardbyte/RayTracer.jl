@@ -3,6 +3,8 @@
 """
     Triangle
 
+Must be given counter-clockwise
+
 ### Fields:
 * `p1`   - Triangle vertex in 3D world space
 * `p2`   - Triangle vertex in 3D world space
@@ -31,9 +33,9 @@ struct Triangle{V, R} <: Object
 end
 
 function Triangle(p1::V, p2::V, p3::V, material::Material) where {V <: AbstractVector{<:Real}}
-    v1 = p2-p1
-    v2 = p3-p1
-    normal = cross(v1, v2)
+    v1 = Vec(p2-p1)
+    v2 = Vec(p3-p1)
+    normal = Vec(cross(v1, v2))
 
     v1v1 = dot(v1, v1)
     v1v2 = dot(v1, v2)
@@ -41,7 +43,7 @@ function Triangle(p1::V, p2::V, p3::V, material::Material) where {V <: AbstractV
 
     denom = v1v2 * v1v2 - v1v1 * v2v2
 
-    return Triangle(p1, p2, p3, normal, v1, v2, v1v1, v1v2, v2v2, denom, material)
+    return Triangle{Vec, Float64}(p1, p2, p3, normal, v1, v2, v1v1, v1v2, v2v2, denom, material)
 end
 
 function hit(t::Triangle, ray::Ray, t_min::Float64, t_max::Float64)

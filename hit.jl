@@ -3,12 +3,12 @@ import Base.copy!
 
 mutable struct HitRecord
     t::Float64
-    p::SVector{3,Float64}
-    normal::SVector{3,Float64}
+    p::Vec
+    normal::Vec
     material::Material
 end
 
-zero(::Type{HitRecord}) = RayTracer.HitRecord(maxintfloat(Float64), zeros(Float64, 3), zeros(Float64, 3), Material())
+zero(::Type{HitRecord}) = RayTracer.HitRecord(maxintfloat(Float64), zeros(Vec), zeros(Vec), Material())
 
 const no_hit = zero(HitRecord)
 

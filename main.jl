@@ -15,7 +15,7 @@ zero(::Type{RGB{Float64}}) = RGB{Float64}(0,0,0)
 
 function ray_trace_sphere_objects()
     # My own test scene
-    height, width = 400, 800
+    height, width = 200, 400
 
     red_diffuse_material = RayTracer.DiffuseMaterial([0.7, 0.3, 0.3])
     blue_diffuse_material = RayTracer.DiffuseMaterial([0.3, 0.3, 0.8])
@@ -38,18 +38,26 @@ function ray_trace_sphere_objects()
         RayTracer.Sphere([2.8, 0.0, -2.0], 0.5, blue_metalic_material),
 
         RayTracer.Triangle(
-            [-0.4, -0.5, -3.0],
-            [-0.4, 1.0, -3.0],
-            [0.6, -0.3, -2.0],
+            RayTracer.Vec([-0.4, -0.5, -3.0]),
+            RayTracer.Vec([-0.4, 1.0, -3.0]),
+            RayTracer.Vec([0.3, 0.3, -2.0]),
             blue_diffuse_material
         ),
 
         RayTracer.Triangle(
-            [-0.4, 1.0, -3.0],
-            [0.6, 1.0, -3.5],
-            [0.6, -0.3, -2.0],
+            RayTracer.Vec([-0.4, 1.0, -3.0]),
+            RayTracer.Vec([0.6, 1.0, -3.5]),
+            RayTracer.Vec([0.3, 0.3, -2.0]),
             red_diffuse_material
         ),
+
+        RayTracer.Box(
+            [2.0, 0.7, -2.0],
+            [1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, -1.0],
+            red_diffuse_material
+        )
 
     ]
 

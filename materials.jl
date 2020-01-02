@@ -64,10 +64,10 @@ show(io::IO, m::ArbitraryMaterial) =
 """
 struct DiffuseMaterial <: Material
     # All we use is color information or albedo
-    color_diffuse::SVector{3,Float64}
+    color_diffuse::Vec
 end
 
-DiffuseMaterial(;color_diffuse = ones(3)) = DiffuseMaterial(Vec(color_diffuse))
+DiffuseMaterial(;color_diffuse::AbstractVector{<:Real} = ones(Vec)) = DiffuseMaterial(Vec(color_diffuse))
 
 show(io::IO, m::DiffuseMaterial) = print(io, "DiffuseMaterial", "\n    Color - ", m.color_diffuse )
 
@@ -78,7 +78,7 @@ show(io::IO, m::DiffuseMaterial) = print(io, "DiffuseMaterial", "\n    Color - "
 """
 struct MetalMaterial <: Material
     # Color Information
-    reflection::SVector{3,Float64}
+    reflection::Vec
 
     # Surface Properties
     fuzz::Float64

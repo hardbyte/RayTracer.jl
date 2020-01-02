@@ -9,3 +9,6 @@ abstract type Object end
 
 include("objects/sphere.jl")
 include("objects/triangle.jl")
+include("objects/composite.jl")
+include("objects/quad.jl")
+include("objects/box.jl")

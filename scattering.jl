@@ -1,13 +1,13 @@
 export scatter
 
-function refract(v::T, n::T, ni_over_nt::Float64) where {T <: AbstractVector{<:Real}}
+function refract(v::V, n::V, ni_over_nt::Float64) where {V <: AbstractVector{<:Real}}
     uv = unit_vector(v)
     dt = dot(uv, n)
     discriminant = 1.0 - ni_over_nt*ni_over_nt*(1-dt^2)
     if discriminant > 0.0
         refracted = ni_over_nt*(uv - n*dt) - n*sqrt(discriminant)
     else
-        refracted = zeros(SVector{3,Float64})
+        refracted = zeros(V)
     end
     return discriminant > 0.0, refracted
 end
@@ -48,7 +48,7 @@ function scatter(ray::Ray, material::DielectricMaterial, rec::HitRecord)
     # Compute reflection then refraction
     reflected = reflect(ray.direction, rec.normal)
     # todo material property
-    attenuation = ones(SVector{3,Float64})
+    attenuation = ones(Vec)
 
     if dot(ray.direction, rec.normal) > 0.0
         outward_normal = -rec.normal
