@@ -14,7 +14,7 @@ zero(::Type{RGB{Float64}}) = RGB{Float64}(0,0,0)
 
 function ray_trace_sphere_objects()
     # My own test scene
-    height, width = 200, 400
+    height, width = 1080, 1920
 
     red_diffuse_material = RayTracer.DiffuseMaterial([0.7, 0.3, 0.3])
     blue_diffuse_material = RayTracer.DiffuseMaterial([0.3, 0.3, 0.8])
@@ -74,7 +74,7 @@ end
 
 function ray_trace_tutorial()
     # One of the scenes from the tutorial
-    height, width = 100, 200
+    height, width = 1080, 1920
 
     scene_objects = [
         RayTracer.Sphere([0, 0, -1], 0.5, RayTracer.DiffuseMaterial([0.1,0.2,0.5])),
@@ -87,7 +87,7 @@ function ray_trace_tutorial()
         RayTracer.Sphere([-1,0,-1], -0.45, RayTracer.DielectricMaterial(1.5)),
     ]
 
-    RayTracer.raytrace(height=height, width=width, camera_angle=90.0, scene=scene_objects, num_samples=16)
+    RayTracer.raytrace(height=height, width=width, camera_angle=90.0, scene=scene_objects, num_samples=32)
 end
 
 
