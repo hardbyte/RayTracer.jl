@@ -66,7 +66,7 @@ end
 function get_ray(camera::Camera, s::Float64, t::Float64)::Ray
     lens_radius = camera.aperture/2
     rd = lens_radius * random_point_in_unit_disk()
-    offset = camera.u * rd[1] + camera.v * rd[2]
+    @inbounds offset = camera.u * rd[1] + camera.v * rd[2]
 
     return Ray(camera.origin + offset,
                camera.lower_left_corner + s*camera.horizontal + t*camera.vertical

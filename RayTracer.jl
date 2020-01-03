@@ -31,7 +31,8 @@ function linear_interpolator(first::T, second::T; axis=2) where {T <: AbstractVe
 end
 
 
-const default_bg = linear_interpolator(Vec(0.6, 0.6, 0.6), Vec(0.3, 0.3, 0.9))
+#const default_bg = linear_interpolator(Vec(0.3, 0.3, 0.4), Vec(0.3, 0.3, 0.9))
+const default_bg = r::Ray -> Vec(0.3, 0.3, 0.5)
 
 
 function color(ray::Ray, objects::Array{<:Object}; background=default_bg)::Vec
@@ -87,18 +88,18 @@ function raytrace(; height::Int64, width::Int64, camera::Camera, scene, num_samp
     # Preallocate output image array
     pixel_data::Array{Float64, 3} = zeros(Float64, 3, height, width)
 
-    for row in height:-1:1
-        for col in 1:width
+    @simd for row in height:-1:1
+        @simd for col in 1:width
             pixel = [0.0, 0.0, 0.0]
 
-            for sample in 1:num_samples
+            @simd for sample in 1:num_samples
                 u = (rand() + col)/width
                 v = (rand() + row)/height
 
                 ray = RayTracer.get_ray(camera, u, v)
-                pixel += color(ray, scene, background=default_bg)
+                @inbounds pixel += color(ray, scene, background=default_bg)
             end
-            pixel_data[:, row, col] = pixel/num_samples
+            @inbounds pixel_data[:, row, col] = pixel/num_samples
         end
     end
 

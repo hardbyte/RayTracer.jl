@@ -4,6 +4,8 @@ import Base.iterate
 A Box in 3D space.
 
 We build it out of 6 quads.
+
+Currently no optimization for computing the Ray intersection. 
 """
 struct Box{V, R} <: CompositeObject
     #origin::Vec
