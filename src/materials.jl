@@ -1,4 +1,5 @@
 export Material, ArbitraryMaterial, DiffuseMaterial, scatter
+import Base: show
 
 """
     Material

@@ -6,8 +6,7 @@ import LinearAlgebra: norm, dot
 # We use image data H,W,C
 # https://juliaimages.org/latest/quickstart/
 
-# TODO: drop the include?
-include("RayTracer.jl")
+using RayTracer
 
 import Base.zero
 zero(::Type{RGB{Float64}}) = RGB{Float64}(0,0,0)
