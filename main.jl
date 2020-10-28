@@ -13,8 +13,9 @@ zero(::Type{RGB{Float64}}) = RGB{Float64}(0,0,0)
 
 
 function ray_trace_sphere_objects()
-    # My own test scene
+    # A test scene
     height, width = 1080, 1920
+    samples, max_bounces = 64, 50
 
     red_diffuse_material = RayTracer.DiffuseMaterial([0.7, 0.3, 0.3])
     blue_diffuse_material = RayTracer.DiffuseMaterial([0.3, 0.3, 0.8])
@@ -68,26 +69,11 @@ function ray_trace_sphere_objects()
         aspect=width/height,
         aperture=1.0/16.0 # Use 0.0 for a perfect pinhole
     )
+    
+    render_properties = RayTracer.RenderProperties(samples, max_bounces)
+    output_properties = RayTracer.OutputProperties(width, height)
 
-    RayTracer.raytrace(height=height, width=width, camera=camera, scene=scene_objects, num_samples=64)
-end
-
-function ray_trace_tutorial()
-    # One of the scenes from the tutorial
-    height, width = 1080, 1920
-
-    scene_objects = [
-        RayTracer.Sphere([0, 0, -1], 0.5, RayTracer.DiffuseMaterial([0.1,0.2,0.5])),
-        RayTracer.Sphere([0, -100.5, -1], 100, RayTracer.DiffuseMaterial([0.8,0.8,0.0])),
-        RayTracer.Sphere([1,0,-1], 0.5, RayTracer.MetalMaterial([0.8,0.6,0.2], 0.3)),
-        RayTracer.Sphere([-1,0,-1], 0.5, RayTracer.DielectricMaterial(1.5)),
-        # note that if you use a negative radius, the geometry is unaffected but
-        # the surface normal points inward, so it can be used as a bubble to make
-        # a hollow glass sphere
-        RayTracer.Sphere([-1,0,-1], -0.45, RayTracer.DielectricMaterial(1.5)),
-    ]
-
-    RayTracer.raytrace(height=height, width=width, camera_angle=90.0, scene=scene_objects, num_samples=32)
+    RayTracer.raytrace(output_properties=output_properties, camera=camera, scene=scene_objects, render_properties=render_properties)
 end
 
 
@@ -161,8 +147,8 @@ end
 
 
 @info "Rendering scene"
-#@time img_data = ray_trace_sphere_objects()
-@time img_data = ray_trace_mit_course()
+@time img_data = ray_trace_sphere_objects()
+#@time img_data = ray_trace_mit_course()
 @info "Rendering complete"
 
 @show typeof(img_data)
