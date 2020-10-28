@@ -3,7 +3,7 @@ import Base.iterate
 """
 A Quad is a rectangle in 3D space.
 
-We build it out of two triangles.
+Note it is directional - the normal follows the right hand rule.
 """
 struct Quad{V, R} <: CompositeObject
     # Bottom left

@@ -11,10 +11,22 @@ include("objects.jl")
 include("hit.jl")
 include("scattering.jl")
 include("camera.jl")
+include("serialization.jl")
 
 
+struct OutputProperties
+    width::Int64
+    height::Int64
+end
+
+struct RenderProperties
+    samples::Int64
+    max_bounces::Int64
+end
 
 const MAX_BOUNCES = 16
+
+
 
 
 """
@@ -32,13 +44,22 @@ end
 
 
 #const default_bg = linear_interpolator(Vec(0.3, 0.3, 0.4), Vec(0.3, 0.3, 0.9))
-const default_bg = r::Ray -> Vec(0.3, 0.3, 0.5)
+const default_bg = r::Ray -> Vec(0.4, 0.4, 0.45)
 
+emission(::Material, ::HitRecord) = zeros(Vec)
+function emission(material::EmitterMaterial, hit_record::HitRecord)
+    return material.intensity .* material.color
+end
 
-function color(ray::Ray, objects::Array{<:Object}; background=default_bg)::Vec
+function emission(::NormalMaterial, rec::HitRecord)
+    N = rec.normal
+    return 0.5 * (N .+ 1)
+end
+
+function color(ray::Ray, objects::Array{<:Object}; background=default_bg, max_bounces=MAX_BOUNCES)::Vec
     output_attenuation = ones(Vec)
     scattered_ray = ray
-    for depth in 0:MAX_BOUNCES
+    for depth in 0:max_bounces
 
         # Get the first object intersection for the ray.
         hit_record = RayTracer.hit(objects, scattered_ray, 0.001, maxintfloat(Float64))
@@ -46,45 +67,33 @@ function color(ray::Ray, objects::Array{<:Object}; background=default_bg)::Vec
         if hit_record !== no_hit
             # Color using the hit object's materials
             is_scattered, attenuation = scatter!(scattered_ray, hit_record.material, hit_record)
-            output_attenuation = output_attenuation .* attenuation
+            emitted = emission(hit_record.material, hit_record)
+            
             if !is_scattered
-                # The hit object absorbed this ray. E.g. the very edge of a sphere
-                return zeros(Vec)
+                # The hit object absorbed this ray. E.g. a light source, or the very edge of a sphere
+                return emitted
             end
+            # Otherwise update the light color ready to bounce again
+            output_attenuation = emitted + output_attenuation .* attenuation
         else
             # Missed all objects; sample the background for this Ray
             return output_attenuation .* background(scattered_ray)
         end
     end
-    # After MAX_BOUNCES which all hit objects we return zeros
+    # After MAX_BOUNCES which all hit objects we return black (no more light is gathered)
     return zeros(Vec)
 end
 
 
-function output_as_ppm(data::AbstractArray{RGB{Float64}, 2}, fname="out.ppm")
-    rows, columns = size(data)
-    @info "Writing data as ppm"
-    @info "Input dimensions: $(size(data))"
-    open(fname, "w") do f
-        write(f, "P3\n")
-        write(f, "$columns $rows\n")
-        write(f, "255\n")
-        for row in rows:-1:1
-            for column in 1:columns
-                r, g, b = map(to_uint, sqrt.(color_to_vector(data[row, column])))
-                write(f, "$r $g $b\n")
-            end
-        end
-    end
-end
 
 
 
 """
 
 """
-function raytrace(; height::Int64, width::Int64, camera::Camera, scene, num_samples=32)
-
+function raytrace(; output_properties::OutputProperties, camera::Camera, scene::Vector, render_properties::RenderProperties)
+    num_samples = render_properties.samples
+    width, height = output_properties.width, output_properties.height
     # Preallocate output image array
     pixel_data::Array{Float64, 3} = zeros(Float64, 3, height, width)
 
@@ -97,7 +106,7 @@ function raytrace(; height::Int64, width::Int64, camera::Camera, scene, num_samp
                 v = (rand() + row)/height
 
                 ray = RayTracer.get_ray(camera, u, v)
-                @inbounds pixel += color(ray, scene, background=default_bg)
+                @inbounds pixel += clamp.(color(ray, scene, background=default_bg, max_bounces=render_properties.max_bounces), 0.0, 1.0)
             end
             @inbounds pixel_data[:, row, col] = pixel/num_samples
         end

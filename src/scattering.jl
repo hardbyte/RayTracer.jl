@@ -23,14 +23,21 @@ function reflect(v::AbstractVector{<:Real}, n::AbstractVector{<:Real})
 end
 
 
-function scatter!(ray::Ray, material::NormalMaterial, rec::HitRecord)
-    N = rec.normal
-    return false, 0.5 * (N .+ 1)
+"""
+By default we absorb the ray (no scattering).
+"""
+function scatter!(ray::Ray, material::Material, rec::HitRecord)
+    return false, zeros(Vec)
+end
+
+function scatter!(ray::Ray, material::EmitterMaterial, rec::HitRecord)
+    return false, material.intensity .* material.color
 end
 
 function scatter!(ray::Ray, material::DiffuseMaterial, rec::HitRecord)
     # Compute diffuse shader using material
     target = rec.p + rec.normal + RayTracer.random_point_in_unit_sphere()
+    # Scattered ray starts from the intercept
     ray.origin[:] = rec.p
     ray.direction[:] = target - rec.p
     return true, material.color_diffuse
@@ -43,14 +50,19 @@ function scatter!(ray::Ray, material::MetalMaterial, rec::HitRecord)
     ray.origin[:] = rec.p
     ray.direction[:] = reflected
     is_scattered = dot(reflected, rec.normal) > 0.0
-    return is_scattered, material.reflection
+    if !is_scattered
+        color = zeros(Vec)
+    else
+        color = material.reflection
+    end
+    return is_scattered, color
 end
 
 function scatter!(ray::Ray, material::DielectricMaterial, rec::HitRecord)
     # Compute reflection then refraction
     reflected = reflect(ray.direction, rec.normal)
-    # todo material property
-    attenuation = ones(Vec)
+    # The Dielectric material can tint the light refracted through it.
+    attenuation = material.color
 
     if dot(ray.direction, rec.normal) > 0.0
         outward_normal = -rec.normal

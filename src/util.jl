@@ -1,4 +1,4 @@
-using Setfield
+using Setfield  # provides the @set macro
 using StaticArrays
 
 const Vec = SVector{3, Float64}

@@ -18,7 +18,6 @@ struct Triangle{V, R} <: Object
 
     normal::V
 
-
     # Not sure if precomputing these is helpful
 
     v1::V

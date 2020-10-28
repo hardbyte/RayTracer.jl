@@ -27,17 +27,17 @@ struct Camera
 end
 
 
-function Camera(;lookfrom::Vector{Float64}, lookat::Vector{Float64}, vup::Vector{Float64},
-                vfov::Float64, aspect::Float64, aperture::Float64)
-    return Camera(
-        lookfrom=Vec(lookfrom),
-        lookat=Vec(lookat),
-        vup=Vec(vup),
-        vfov=vfov,
-        aspect=aspect,
-        aperture=aperture
-    )
-end
+# function Camera(;lookfrom::Vector{Float64}, lookat::Vector{Float64}, vup::Vector{Float64},
+#                 vfov::Float64, aspect::Float64, aperture::Float64)
+#     return Camera(
+#         lookfrom=Vec(lookfrom),
+#         lookat=Vec(lookat),
+#         vup=Vec(vup),
+#         vfov=vfov,
+#         aspect=aspect,
+#         aperture=aperture
+#     )
+# end
 
 function Camera(;lookfrom::Vec, lookat::Vec, vup::Vec,
                 vfov::Float64, aspect::Float64, aperture::Float64)

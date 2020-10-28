@@ -26,8 +26,6 @@ struct ArbitraryMaterial <: Material
     specular_exponent::Float64
     reflection::Vector{Float64}
 
-    # maybe?
-    #material_type::Val
 end
 
 # Default constructor gives an ArbitraryMaterial
@@ -75,7 +73,10 @@ show(io::IO, m::DiffuseMaterial) = print(io, "DiffuseMaterial", "\n    Color - "
 
 
 """
-    MetalMaterial
+    MetalMaterial(reflection:Vec, fuzz)
+
+A shiny colored material. Fuzz controls how dull or shiny it is.
+0.0 is very shiny, 1.0 is very dull
 """
 struct MetalMaterial <: Material
     # Color Information
@@ -99,17 +100,29 @@ show(io::IO, m::MetalMaterial) =
 
 
 struct DielectricMaterial <: Material
-    # Color Information
-    #reflection::Vector{Float64}
+    color::Vector{Float64}
 
     # Surface Properties
     refraction_index::Float64
     #specular_exponent::
 
 end
+DielectricMaterial(refraction_index::Float64) = DielectricMaterial(ones(Vec), refraction_index)
 show(io::IO, m::DielectricMaterial) = print(io, "DielectricMaterial", "\n    Refraction Index - ", m.refraction_index )
 
 
 
 struct NormalMaterial <: Material
 end
+
+
+
+
+struct EmitterMaterial <: Material
+    intensity::Float64
+    color::Vec
+end
+
+EmitterMaterial(color::AbstractVector{<:Real} = ones(Vec), ) = EmitterMaterial(intensity=1.0, color=Vec(color))
+EmitterMaterial(;intensity::Float64, color::AbstractVector{<:Real} = ones(Vec), ) = EmitterMaterial(intensity, Vec(color))
+show(io::IO, m::EmitterMaterial) = print(io, "EmitterMaterial", "\n    Color - ", m.color, "    Intensity - ", m.intensity )
