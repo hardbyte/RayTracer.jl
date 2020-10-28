@@ -1,8 +1,13 @@
 
 A toy brute force path tracer written in Julia following the tutorial [Ray Tracing in one weekend](https://raytracing.github.io/).
 
-`RayTracer.jl` features two amazing primitives: the `Sphere` and the `Triangle`. Combine these 
-primitives with a diffuse, metalic, or dielectric material to make amazing images.
+`RayTracer.jl` features basic primitive shapes: 
+- `Sphere` 
+- `Triangle`
+- `Quad` (rectangle)
+- `Box`
+
+Combine these primitive shapes with various diffuse, metalic, dielectric or emissive materials to make amazing images.
 
 ![](./samples/billiards.jpg)
 
@@ -75,9 +80,3 @@ RayTracer.raytrace(output_properties=output_properties, camera=camera, scene=sce
 ![](./samples/out.jpg)
 
 
-### Bonus feature: PPM
-
-`RayTracer.jl` can save output images in the highly text based `ppm` format - probably not rendered
-as an image anywhere!
-
-![](./samples/out.ppm)
