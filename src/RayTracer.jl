@@ -56,7 +56,7 @@ function emission(::NormalMaterial, rec::HitRecord)
     return 0.5 * (N .+ 1)
 end
 
-function color(ray::Ray, objects::Array{<:Object}; background=default_bg, max_bounces=MAX_BOUNCES)::Vec
+function color(ray::Ray, objects::Vector{<:Object}; background=default_bg, max_bounces=MAX_BOUNCES)::Vec
     output_attenuation = ones(Vec)
     scattered_ray = ray
     for depth in 0:max_bounces
