@@ -123,6 +123,6 @@ struct EmitterMaterial <: Material
     color::Vec
 end
 
-EmitterMaterial(color::AbstractVector{<:Real} = ones(Vec), ) = EmitterMaterial(intensity=1.0, color=Vec(color))
-EmitterMaterial(;intensity::Float64, color::AbstractVector{<:Real} = ones(Vec), ) = EmitterMaterial(intensity, Vec(color))
+EmitterMaterial(color::AbstractVector{<:Real}) = EmitterMaterial(intensity=1.0, color=Vec(color))
+EmitterMaterial(;intensity::Float64 = 1.0, color::AbstractVector{<:Real} = ones(Vec)) = EmitterMaterial(intensity, Vec(color))
 show(io::IO, m::EmitterMaterial) = print(io, "EmitterMaterial", "\n    Color - ", m.color, "    Intensity - ", m.intensity )

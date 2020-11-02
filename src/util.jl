@@ -2,6 +2,7 @@ using Setfield  # provides the @set macro
 using StaticArrays
 
 const Vec = SVector{3, Float64}
+const MutableVec = MVector{3, Float64}
 
 # struct Vec <: FieldVector{3, Float64}
 #     x::Float64
@@ -22,6 +23,8 @@ function random_point_in_unit_sphere()
     end
     return pnt
 end
+
+random_unit_vector() = unit_vector(random_point_in_unit_sphere())
 
 function random_point_in_unit_disk()
     point_in_unit_square = () -> 2.0 * rand(Vec) - ones(Vec)

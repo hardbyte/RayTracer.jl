@@ -1,8 +1,10 @@
 
 """
     Sphere
+
 Sphere is a primitive object.
-### Fields:
+
+## Fields:
 * `center`   - Center of the Sphere in 3D world space
 * `radius`   - Radius of the Sphere
 * `material` - Material of the Sphere
@@ -17,9 +19,10 @@ function Sphere(center::T, radius::Real, material::Material) where {T<:AbstractV
     return Sphere(Vec(center), Float64(radius), material)
 end
 
+center(obj::Sphere) = obj.center
+
 show(io::IO, s::Sphere) =
-    print(io, "Sphere Object:\n    Center - ", s.center, "\n    Radius - ", s.radius[],
-          "\n    ", s.material)
+    print(io, "Sphere Object:\n    Center - ", s.center, "\n    Radius - ", s.radius[], "\n")
 
 function hit(obj::Sphere, ray::Ray, t_min::Float64, t_max::Float64)
   oc = ray.origin - obj.center
@@ -48,3 +51,11 @@ function hit(obj::Sphere, ray::Ray, t_min::Float64, t_max::Float64)
   end
   return no_hit
 end
+
+function bounding_box(sphere::Sphere)
+    AABB(
+        sphere.center - sphere.radius * ones(Vec),
+        sphere.center + sphere.radius * ones(Vec)
+    )
+end
+

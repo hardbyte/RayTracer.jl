@@ -36,11 +36,11 @@ end
 
 function scatter!(ray::Ray, material::DiffuseMaterial, rec::HitRecord)
     # Compute diffuse shader using material
-    target = rec.p + rec.normal + RayTracer.random_point_in_unit_sphere()
+    target = rec.p + rec.normal + RayTracer.random_unit_vector()
     # Scattered ray starts from the intercept
     ray.origin[:] = rec.p
     ray.direction[:] = target - rec.p
-    return true, material.color_diffuse
+    return true, 0.5 .* material.color_diffuse
 end
 
 

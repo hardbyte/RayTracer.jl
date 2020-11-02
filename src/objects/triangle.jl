@@ -1,5 +1,3 @@
-
-
 """
     Triangle
 
@@ -29,6 +27,7 @@ struct Triangle{V, R} <: Object
     denom::R
 
     material::Material
+
 end
 
 function Triangle(p1::V, p2::V, p3::V, material::Material) where {V <: AbstractVector{<:Real}}
@@ -44,6 +43,7 @@ function Triangle(p1::V, p2::V, p3::V, material::Material) where {V <: AbstractV
 
     return Triangle{Vec, Float64}(p1, p2, p3, normal, v1, v2, v1v1, v1v2, v2v2, denom, material)
 end
+
 
 function hit(t::Triangle, ray::Ray, t_min::Float64, t_max::Float64)
     denom = dot(t.normal, ray.direction)
@@ -83,3 +83,8 @@ function hit(t::Triangle, ray::Ray, t_min::Float64, t_max::Float64)
 
     return HitRecord(ri, ip, -t.normal, t.material)
 end
+
+
+bounding_box(obj::Triangle) = bounding_box([obj.p1, obj.p2, obj.p3])
+
+center(obj::Triangle) = (obj.p1 + obj.p2 + obj.p3)/3

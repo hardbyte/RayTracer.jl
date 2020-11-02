@@ -8,14 +8,15 @@ import LinearAlgebra: norm, dot
 
 using RayTracer
 
-import Base.zero
+import Base
 zero(::Type{RGB{Float64}}) = RGB{Float64}(0,0,0)
 
 
 function ray_trace_sphere_objects()
     # A test scene
     height, width = 1080, 1920
-    samples, max_bounces = 64, 50
+    #samples, max_bounces = 64, 50
+    samples, max_bounces = 16, 10
 
     red_diffuse_material = RayTracer.DiffuseMaterial([0.7, 0.3, 0.3])
     blue_diffuse_material = RayTracer.DiffuseMaterial([0.3, 0.3, 0.8])
@@ -57,7 +58,15 @@ function ray_trace_sphere_objects()
             [0.0, 0.3, 0.0],
             [0.0, 0.0, -0.5],
             blue_diffuse_material
-        )
+        ),
+
+        # A bright rectangular light out of the scene e.g. a window
+        RayTracer.Quad(
+            [15.0, 1.0, 10.0],
+            [0.0, 10.0, 0.0],
+            [0.0, 0.0, -10.0],
+            RayTracer.EmitterMaterial(10.0, [0.8, 0.9, 0.9])
+            ),
 
     ]
 
@@ -77,14 +86,48 @@ function ray_trace_sphere_objects()
 end
 
 
-function ray_trace_mit_course(;samples=64, max_bounces=50)
-    # One of the scenes from the tutorial
-    height, width = 1080, 1920
+function ray_trace_mit_course(;samples=32, max_bounces=64)
+    height, width = 320, 480
 
     # billard radius
-    
-    
+    r = 0.35
 
+    floor_material = RayTracer.DiffuseMaterial([0.35, 0.256, 0.23])
+
+    scene_objects = [
+        # Closest billards
+        RayTracer.Sphere([-1.0, r, -1], r, RayTracer.MetalMaterial([0.7, 0.1, 0.2], 0.1)),
+        RayTracer.Sphere([ 0.0, r, -1], r, RayTracer.DielectricMaterial([0.95, 0.75, 0.35], 1.5)),
+        RayTracer.Sphere([ 1.0, r, -1], r, RayTracer.DiffuseMaterial([0.2745, 0.5098, 0.7059])),
+
+        # Second layer
+        RayTracer.Sphere([-0.5, r, -2], r, RayTracer.DielectricMaterial(1.5)),
+        RayTracer.Sphere([ 0.5, r, -2], r, RayTracer.NormalMaterial()),
+
+        # Back billard
+        RayTracer.Sphere([ 0.0, r, -3], r, RayTracer.MetalMaterial([0.25, 0.2, 0.8], 0.2)),
+
+        # back wall
+        #RayTracer.Quad([-10.0, -5.0, -10.0], [40.0, 0, 0], [0, 20.0, 0], RayTracer.DiffuseMaterial([0.75, 0.76, 0.74])),
+        
+        # dark floor
+        RayTracer.Quad([-10.0, -5.0, 2.0], [40.0, 0, 0], [0, 0.0, -20], floor_material),
+
+        # Might as well lay down a table
+        RayTracer.Quad([3, -0.05, -0.5], [-6.0, 0, 0], [0, 0, -5.0], RayTracer.DiffuseMaterial([0.15, 0.45, 0.1])),
+        
+        # A bright rectangular light off to the left of the scene e.g. a window
+        RayTracer.Quad(
+            [-15.0, -2.0, -1.0],
+            [0.0, 10.0, 0.0],
+            [0.0, 0.0, -10.0],
+            RayTracer.EmitterMaterial(5.0, [1.0, 0.9, 0.9])
+        ),
+
+        # Sun light source off to the upper right
+        RayTracer.Sphere([20.0, 5.0, 5.0], 10, RayTracer.EmitterMaterial(100.0, [4.0, 4.0, 3.8])),
+    ]
+    
     for i in 1:10
         # Random location in front of camera
         l = [0.0, 0.0, -10.0] + 8.0 .* RayTracer.random_point_in_unit_sphere()
@@ -92,7 +135,6 @@ function ray_trace_mit_course(;samples=64, max_bounces=50)
         
         push!(scene_objects, RayTracer.Sphere(l, 0.2, m),)
     end
-
 
     render_properties = RayTracer.RenderProperties(samples, max_bounces)
     output_properties = RayTracer.OutputProperties(width, height)
@@ -110,14 +152,17 @@ function ray_trace_mit_course(;samples=64, max_bounces=50)
 end
 
 
-function ray_trace_stl_teapot(;samples=8, max_bounces=4)
-    mesh = RayTracer.load_trig_mesh_from_stl("teapot.stl")
+function ray_trace_stl_teapot(;samples=4, max_bounces=4)
+    @info "Loading data from STL file"
+    mesh = RayTracer.load_trig_mesh_from_stl("plane.stl")
     trigs = Vector{RayTracer.Object}()
-    push!(trigs, RayTracer.Sphere([-1.0, 0, -1], 1, RayTracer.MetalMaterial([0.7, 0.2, 0.2], 0.1)))
+    #mat = RayTracer.MetalMaterial([0.7, 0.2, 0.2], 0.5)
     mat = RayTracer.NormalMaterial()
     for t in mesh
         push!(trigs, RayTracer.Triangle(t.p1, t.p2, t.p3, mat))
     end
+
+    @show trigs
 
     height, width = 320, 320
 
@@ -125,13 +170,14 @@ function ray_trace_stl_teapot(;samples=8, max_bounces=4)
     output_properties = RayTracer.OutputProperties(width, height)
 
     camera = RayTracer.Camera(
-        lookfrom=RayTracer.Vec(-0.5, 2.0, 20.0),
+        lookfrom=RayTracer.Vec(0.0, 0.0, -10.0),
         lookat=RayTracer.Vec(0.0, 0.0, 0.0),
-        vup=RayTracer.Vec(0.0, 1.0, 0.0),
+        vup=RayTracer.Vec(0.0, 0.0, 1.0),
         vfov=45.0,
         aspect=width/height,
         aperture=1.0/16.0 # Use 0.0 for a perfect pinhole
     )
+
     @info "Starting raytracing."
     RayTracer.raytrace(output_properties=output_properties, camera=camera, scene=trigs, render_properties=render_properties)
 
@@ -140,7 +186,7 @@ end
 @info "Rendering scene"
 #@time img_data = ray_trace_sphere_objects()
 #@time img_data = ray_trace_mit_course()
-ray_trace_stl_teapot()
+img_data = ray_trace_stl_teapot()
 @info "Rendering complete"
 
 @show typeof(img_data)

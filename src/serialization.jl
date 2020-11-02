@@ -1,7 +1,8 @@
 using StaticArrays
-
+import Base
 
 const RawSTLPoint = SVector{3, Float32}
+
 
 struct RawSTLTrig
     normal::RawSTLPoint
@@ -9,6 +10,18 @@ struct RawSTLTrig
     p2::RawSTLPoint
     p3::RawSTLPoint
     ignored::UInt16
+
+end
+
+
+function Base.read(s::IO, ::Type{RawSTLTrig})
+    normal = ltoh.(read(s, RawSTLPoint))
+    p1 = ltoh.(read(s, RawSTLPoint))
+    p2 = ltoh.(read(s, RawSTLPoint))
+    p3 = ltoh.(read(s, RawSTLPoint))
+    ignored = read(s, UInt16)
+
+    RawSTLTrig(normal, p1,p2,p3, ignored)
 end
 
 Base.zero(::Type{RayTracer.RawSTLTrig}) = RawSTLTrig(
@@ -16,7 +29,8 @@ Base.zero(::Type{RayTracer.RawSTLTrig}) = RawSTLTrig(
     zero(RawSTLPoint), 
     zero(RawSTLPoint), 
     zero(RawSTLPoint), 
-    zero(UInt16))
+    zero(UInt16)
+)
 
 
 function output_as_ppm(data::AbstractArray{RGB{Float64}, 2}, fname="out.ppm")
@@ -61,16 +75,32 @@ end
 function load_trig_mesh_from_stl(file::IOStream)
     HEADER_LENGTH = 80
     ignored_header = read(file, HEADER_LENGTH)
+    
     number_of_trigs = ltoh(read(file, UInt32))
 
+    @show Int64(number_of_trigs)
     mesh_data = zeros(RawSTLTrig, number_of_trigs)
-    current_trig_data = Ref{RawSTLTrig}()
+    
+    raw_data = Vector{UInt8}(undef, 50)
+    
     for i in 1:number_of_trigs
-        # twelve 32-bit floating-point numbers: three for the normal and then three for the X/Y/Z coordinate of each vertex
-        # two bytes which are ignored "attribute byte count"
-        read!(file, current_trig_data)
-        mesh_data[i] = current_trig_data[]
+        # Read the current triangle's data
+        current_trig_data = read(file, RawSTLTrig)
+        mesh_data[i] = current_trig_data
     end
+    
+    #mesh_data = copy(reinterpret(RawSTLTrig, raw_data))
+
+    # current_trig_data = Ref{RawSTLTrig}()
+    # for i in 1:number_of_trigs
+    #     # twelve 32-bit floating-point numbers: three for the normal and then three for the X/Y/Z coordinate of each vertex
+    #     # two bytes which are ignored "attribute byte count"
+        
+    #     @show current_trig_data[]
+    #     @assert current_trig_data[].ignored == UInt16(0)
+
+    #     mesh_data[i] = current_trig_data[]
+    # end
     mesh_data
 end
 
