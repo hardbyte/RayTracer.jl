@@ -72,7 +72,7 @@ function color(ray::Ray, bvh::BVH; background=default_bg, max_bounces=MAX_BOUNCE
             
             if !is_scattered
                 # The hit object absorbed this ray. E.g. a light source, or the very edge of a sphere
-                return emitted
+                return emitted .* output_attenuation
             end
             # Otherwise update the light color ready to bounce again
             output_attenuation = emitted + output_attenuation .* attenuation
