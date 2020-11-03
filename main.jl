@@ -152,27 +152,95 @@ function ray_trace_mit_course(;samples=32, max_bounces=64)
 end
 
 
-function ray_trace_stl_teapot(;samples=4, max_bounces=4)
-    @info "Loading data from STL file"
-    mesh = RayTracer.load_trig_mesh_from_stl("plane.stl")
-    trigs = Vector{RayTracer.Object}()
-    #mat = RayTracer.MetalMaterial([0.7, 0.2, 0.2], 0.5)
-    mat = RayTracer.NormalMaterial()
-    for t in mesh
-        push!(trigs, RayTracer.Triangle(t.p1, t.p2, t.p3, mat))
+function ray_trace_stl_teapot(;samples=1024, max_bounces=10)
+    @info "Loading trig data from STL file"
+    
+
+    function stl_to_composite(mat::RayTracer.Material, offset::RayTracer.Vec)
+        mesh = RayTracer.load_trig_mesh_from_stl("teapot.stl")
+        trigs = Vector{RayTracer.Object}()
+        
+        for t in mesh#[1:5:end]
+            push!(trigs, RayTracer.Triangle(t.p1 + offset, t.p2 + offset, t.p3 + offset, mat))
+        end
+
+        return trigs
     end
+    
+    mat = RayTracer.DiffuseMaterial([0.94, 0.52, 0.52])
+    trigs = stl_to_composite(mat, RayTracer.Vec([-1.0, 8.0, 0.1]))
 
-    @show trigs
+    push!(trigs, RayTracer.Box(
+        [-6.0, -2, 0], 
+        [2.0, 0, 0],
+        [0.0, 2.0, 0.0],
+        [0.0, 0.0, 2.0],
+        RayTracer.DiffuseMaterial([0.5, 0.65, 0.35])))
 
-    height, width = 320, 320
+    push!(trigs, RayTracer.Sphere([ -6.0, -5, 2], 2, RayTracer.DielectricMaterial([0.95, 0.75, 0.35], 1.5)))
+    push!(trigs, RayTracer.Sphere([ 6.0, 3, 2], 2, RayTracer.DielectricMaterial([0.85, 0.85, 0.987], 1.2)))
+    push!(trigs, RayTracer.Sphere([ 6.0, -2, 1], 1, RayTracer.DielectricMaterial([0.88, 0.972, 0.903], 1.5)))
+    push!(trigs, RayTracer.Sphere([ 2.0, -4, 1], 1, RayTracer.DielectricMaterial(1.5)))
+    push!(trigs, RayTracer.Sphere([ 7.0, -4, 1], 1, RayTracer.DielectricMaterial([0.8, 0.8, 0.73], 1.5)))
+
+    # Bottom
+    push!(trigs, RayTracer.Quad(
+        [-10.0, -10.0, 0.0], 
+        [20.0, 0.0, 0.0],
+        [0.0, 30.0, 0],
+        RayTracer.DiffuseMaterial([0.48, 0.413, 0.42])
+        #RayTracer.MetalMaterial([0.3, 0.3, 0.4], 0.2)
+    ))
+
+    # Left
+    push!(trigs, RayTracer.Quad(
+        [-10.0, -10.0, 0.0], 
+        [0.0, 30.0, 0],
+        [0.0, 0.0, 20.0],
+        RayTracer.DiffuseMaterial([0.41, 0.7, 0.38])
+    ))
+    
+    # Right
+    push!(trigs, RayTracer.Quad(
+        [10.0, 15.0, 0.0], 
+        [0.0, -30.0, 0],
+        [0.0, 0.0, 20.0],
+        RayTracer.DiffuseMaterial([0.7, 0.3, 0.4])
+    ))
+
+    # Back
+    push!(trigs, RayTracer.Quad(
+        [-10.0, 15.0, 0.0], 
+        [20.0, 0.0, 0],
+        [0.0, 0.0, 20.0],
+        RayTracer.DiffuseMaterial([0.4, 0.41, 0.45])
+    ))
+
+    # top light
+    push!(trigs, RayTracer.Quad(
+        [-10.0, -10.0, 20], 
+        [0.0, 30.0, 0],
+        [25.0, 0.0, 0.0],
+        RayTracer.EmitterMaterial(0.5, [0.985, 0.7875, 0.765])))
+
+    # Window behind the camera
+    push!(trigs, RayTracer.Quad(
+        [-10.0, -20.0, 0.0], 
+        [20.0, 0.0, 0],
+        [0.0, 0.0, 30.0],
+        RayTracer.EmitterMaterial(100, [0.985, 0.85, 0.85])))
+
+
+    #height, width = 1200, 1600
+    height, width = 300, 400
 
     render_properties = RayTracer.RenderProperties(samples, max_bounces)
     output_properties = RayTracer.OutputProperties(width, height)
 
     camera = RayTracer.Camera(
-        lookfrom=RayTracer.Vec(0.0, 0.0, -10.0),
-        lookat=RayTracer.Vec(0.0, 0.0, 0.0),
-        vup=RayTracer.Vec(0.0, 0.0, 1.0),
+        lookfrom=RayTracer.Vec(0.0, -18.0, 7.0),
+        lookat=RayTracer.Vec(0.0, 8.0, 2.0),
+        vup=RayTracer.Vec(0.0, 1.0, 0.0),
         vfov=45.0,
         aspect=width/height,
         aperture=1.0/16.0 # Use 0.0 for a perfect pinhole
@@ -186,7 +254,7 @@ end
 @info "Rendering scene"
 #@time img_data = ray_trace_sphere_objects()
 #@time img_data = ray_trace_mit_course()
-img_data = ray_trace_stl_teapot()
+@time img_data = ray_trace_stl_teapot()
 @info "Rendering complete"
 
 @show typeof(img_data)

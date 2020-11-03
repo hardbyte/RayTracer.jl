@@ -4,6 +4,7 @@ authors = ["Brian Thorne <brian@thorne.link>"]
 version = "0.2.0"
 
 [deps]
+CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 ColorTypes = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
 FLoops = "cc61a311-1640-44b5-9fba-1b764f453329"
 ImageMagick = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"

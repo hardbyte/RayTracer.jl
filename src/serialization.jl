@@ -88,19 +88,7 @@ function load_trig_mesh_from_stl(file::IOStream)
         current_trig_data = read(file, RawSTLTrig)
         mesh_data[i] = current_trig_data
     end
-    
-    #mesh_data = copy(reinterpret(RawSTLTrig, raw_data))
 
-    # current_trig_data = Ref{RawSTLTrig}()
-    # for i in 1:number_of_trigs
-    #     # twelve 32-bit floating-point numbers: three for the normal and then three for the X/Y/Z coordinate of each vertex
-    #     # two bytes which are ignored "attribute byte count"
-        
-    #     @show current_trig_data[]
-    #     @assert current_trig_data[].ignored == UInt16(0)
-
-    #     mesh_data[i] = current_trig_data[]
-    # end
     mesh_data
 end
 

@@ -40,7 +40,7 @@ function scatter!(ray::Ray, material::DiffuseMaterial, rec::HitRecord)
     # Scattered ray starts from the intercept
     ray.origin[:] = rec.p
     ray.direction[:] = target - rec.p
-    return true, 0.5 .* material.color_diffuse
+    return true, material.color_diffuse
 end
 
 
